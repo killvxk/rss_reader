@@ -1,6 +1,5 @@
 use rss_reader::core::feed_manager::FeedManager;
 use rss_reader::db::create_pool;
-use sqlx::SqlitePool;
 use wiremock::matchers::{method, path};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 

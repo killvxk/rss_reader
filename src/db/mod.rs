@@ -25,6 +25,6 @@ mod tests {
     #[tokio::test]
     async fn test_create_pool() {
         let pool = create_pool(":memory:").await.unwrap();
-        assert!(pool.is_closed() == false);
+        assert!(!pool.is_closed());
     }
 }

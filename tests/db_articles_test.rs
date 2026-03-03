@@ -4,7 +4,6 @@ use rss_reader::db::articles::{
     toggle_bookmark,
 };
 use rss_reader::db::{create_pool, feeds::insert_feed};
-use sqlx::SqlitePool;
 
 #[tokio::test]
 async fn test_article_operations() {

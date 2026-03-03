@@ -1,6 +1,5 @@
 use rss_reader::db::feeds::{get_all_feeds, get_feed_by_url, insert_feed};
-use rss_reader::db::{create_pool, schema::Feed};
-use sqlx::SqlitePool;
+use rss_reader::db::create_pool;
 
 #[tokio::test]
 async fn test_insert_and_query_feed() {

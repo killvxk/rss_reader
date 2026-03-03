@@ -1,5 +1,5 @@
 use rss_reader::fetcher::http::fetch_feed;
-use rss_reader::fetcher::parser::{parse_feed, ParsedArticle, ParsedFeed};
+use rss_reader::fetcher::parser::parse_feed;
 use wiremock::matchers::{method, path};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 

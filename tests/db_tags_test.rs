@@ -3,7 +3,6 @@ use rss_reader::db::tags::{
     add_tag_to_article, create_tag, get_all_tags, get_articles_by_tag, get_tags_for_article,
 };
 use rss_reader::db::{articles::insert_article, create_pool, feeds::insert_feed};
-use sqlx::SqlitePool;
 
 #[tokio::test]
 async fn test_tag_operations() {

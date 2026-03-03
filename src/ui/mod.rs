@@ -65,132 +65,129 @@ async fn run_app(
             let app_event = handle_key_event(key);
 
             match app_event {
-                    AppEvent::Quit => {
-                        return Ok(());
-                    }
-                    AppEvent::MoveUp => {
-                        app.move_selection_up();
-                        // 如果在 Feeds 面板，切换到对应 feed 的文章
-                        if app.active_panel == state::Panel::Feeds {
-                            if let Some(feed) = app.selected_feed() {
-                                app.filter_mode = state::FilterMode::ByFeed(feed.id);
-                                apply_filter(app).await?;
-                            }
-                        }
-                    }
-                    AppEvent::MoveDown => {
-                        app.move_selection_down();
-                        // 如果在 Feeds 面板，切换到对应 feed 的文章
-                        if app.active_panel == state::Panel::Feeds {
-                            if let Some(feed) = app.selected_feed() {
-                                app.filter_mode = state::FilterMode::ByFeed(feed.id);
-                                apply_filter(app).await?;
-                            }
-                        }
-                    }
-                    AppEvent::SwitchPanelLeft => {
-                        app.switch_panel_left();
-                    }
-                    AppEvent::SwitchPanelRight => {
-                        app.switch_panel_right();
-                    }
-                    AppEvent::ToggleRead => {
-                        if let Some(article) = app.selected_article() {
-                            let article_id = article.id;
-                            let new_status = !article.is_read;
-                            if let Err(e) =
-                                articles::mark_as_read(&app.pool, article_id, new_status).await
-                            {
-                                app.status_message = format!("Error: {}", e);
-                            } else {
-                                // Reload articles
-                                app.articles =
-                                    articles::get_all_articles(&app.pool, 1000, 0).await?;
-                                apply_filter(app).await?;
-                                app.status_message = if new_status {
-                                    "Marked as read"
-                                } else {
-                                    "Marked as unread"
-                                }
-                                .to_string();
-                            }
-                        }
-                    }
-                    AppEvent::ToggleBookmark => {
-                        if let Some(article) = app.selected_article() {
-                            let article_id = article.id;
-                            if let Err(e) = articles::toggle_bookmark(&app.pool, article_id).await {
-                                app.status_message = format!("Error: {}", e);
-                            } else {
-                                // Reload articles
-                                app.articles =
-                                    articles::get_all_articles(&app.pool, 1000, 0).await?;
-                                apply_filter(app).await?;
-                                app.status_message = "Bookmark toggled".to_string();
-                            }
-                        }
-                    }
-                    AppEvent::OpenInBrowser => {
-                        if let Some(article) = app.selected_article() {
-                            let url = article.link.clone();
-                            let article_id = article.id;
-                            if let Err(e) = open::that(&url) {
-                                app.status_message = format!("Failed to open browser: {}", e);
-                            } else {
-                                app.status_message = format!("Opened: {}", url);
-                                // Mark as read
-                                let _ = articles::mark_as_read(&app.pool, article_id, true).await;
-                                app.articles =
-                                    articles::get_all_articles(&app.pool, 1000, 0).await?;
-                                apply_filter(app).await?;
-                            }
-                        }
-                    }
-                    AppEvent::Refresh => {
-                        app.status_message = "Refreshing feeds...".to_string();
-                        terminal.draw(|f| render::draw(f, app))?;
-
-                        let results = manager.fetch_all_feeds().await;
-                        let success_count = results.iter().filter(|r| r.is_ok()).count();
-                        let total_articles: usize =
-                            results.iter().filter_map(|r| r.as_ref().ok()).sum();
-
-                        app.feeds = feeds::get_all_feeds(&app.pool).await?;
-                        app.articles = articles::get_all_articles(&app.pool, 1000, 0).await?;
-                        apply_filter(app).await?;
-
-                        app.status_message = format!(
-                            "Refreshed {} feeds, {} new articles",
-                            success_count, total_articles
-                        );
-                    }
-                    AppEvent::ToggleHelp => {
-                        app.show_help = !app.show_help;
-                    }
-                    AppEvent::FilterAll => {
-                        app.filter_mode = FilterMode::All;
-                        apply_filter(app).await?;
-                        app.status_message = "Showing all articles".to_string();
-                    }
-                    AppEvent::FilterUnread => {
-                        app.filter_mode = FilterMode::Unread;
-                        apply_filter(app).await?;
-                        app.status_message = "Showing unread articles".to_string();
-                    }
-                    AppEvent::FilterBookmarked => {
-                        app.filter_mode = FilterMode::Bookmarked;
-                        apply_filter(app).await?;
-                        app.status_message = "Showing bookmarked articles".to_string();
-                    }
-                    AppEvent::Search => {
-                        // TODO: Implement search input
-                        app.status_message = "Search not yet implemented".to_string();
-                    }
-                    AppEvent::None => {}
+                AppEvent::Quit => {
+                    return Ok(());
                 }
+                AppEvent::MoveUp => {
+                    app.move_selection_up();
+                    // 如果在 Feeds 面板，切换到对应 feed 的文章
+                    if app.active_panel == state::Panel::Feeds {
+                        if let Some(feed) = app.selected_feed() {
+                            app.filter_mode = state::FilterMode::ByFeed(feed.id);
+                            apply_filter(app).await?;
+                        }
+                    }
+                }
+                AppEvent::MoveDown => {
+                    app.move_selection_down();
+                    // 如果在 Feeds 面板，切换到对应 feed 的文章
+                    if app.active_panel == state::Panel::Feeds {
+                        if let Some(feed) = app.selected_feed() {
+                            app.filter_mode = state::FilterMode::ByFeed(feed.id);
+                            apply_filter(app).await?;
+                        }
+                    }
+                }
+                AppEvent::SwitchPanelLeft => {
+                    app.switch_panel_left();
+                }
+                AppEvent::SwitchPanelRight => {
+                    app.switch_panel_right();
+                }
+                AppEvent::ToggleRead => {
+                    if let Some(article) = app.selected_article() {
+                        let article_id = article.id;
+                        let new_status = !article.is_read;
+                        if let Err(e) =
+                            articles::mark_as_read(&app.pool, article_id, new_status).await
+                        {
+                            app.status_message = format!("Error: {}", e);
+                        } else {
+                            // Reload articles
+                            app.articles = articles::get_all_articles(&app.pool, 1000, 0).await?;
+                            apply_filter(app).await?;
+                            app.status_message = if new_status {
+                                "Marked as read"
+                            } else {
+                                "Marked as unread"
+                            }
+                            .to_string();
+                        }
+                    }
+                }
+                AppEvent::ToggleBookmark => {
+                    if let Some(article) = app.selected_article() {
+                        let article_id = article.id;
+                        if let Err(e) = articles::toggle_bookmark(&app.pool, article_id).await {
+                            app.status_message = format!("Error: {}", e);
+                        } else {
+                            // Reload articles
+                            app.articles = articles::get_all_articles(&app.pool, 1000, 0).await?;
+                            apply_filter(app).await?;
+                            app.status_message = "Bookmark toggled".to_string();
+                        }
+                    }
+                }
+                AppEvent::OpenInBrowser => {
+                    if let Some(article) = app.selected_article() {
+                        let url = article.link.clone();
+                        let article_id = article.id;
+                        if let Err(e) = open::that(&url) {
+                            app.status_message = format!("Failed to open browser: {}", e);
+                        } else {
+                            app.status_message = format!("Opened: {}", url);
+                            // Mark as read
+                            let _ = articles::mark_as_read(&app.pool, article_id, true).await;
+                            app.articles = articles::get_all_articles(&app.pool, 1000, 0).await?;
+                            apply_filter(app).await?;
+                        }
+                    }
+                }
+                AppEvent::Refresh => {
+                    app.status_message = "Refreshing feeds...".to_string();
+                    terminal.draw(|f| render::draw(f, app))?;
+
+                    let results = manager.fetch_all_feeds().await;
+                    let success_count = results.iter().filter(|r| r.is_ok()).count();
+                    let total_articles: usize =
+                        results.iter().filter_map(|r| r.as_ref().ok()).sum();
+
+                    app.feeds = feeds::get_all_feeds(&app.pool).await?;
+                    app.articles = articles::get_all_articles(&app.pool, 1000, 0).await?;
+                    apply_filter(app).await?;
+
+                    app.status_message = format!(
+                        "Refreshed {} feeds, {} new articles",
+                        success_count, total_articles
+                    );
+                }
+                AppEvent::ToggleHelp => {
+                    app.show_help = !app.show_help;
+                }
+                AppEvent::FilterAll => {
+                    app.filter_mode = FilterMode::All;
+                    apply_filter(app).await?;
+                    app.status_message = "Showing all articles".to_string();
+                }
+                AppEvent::FilterUnread => {
+                    app.filter_mode = FilterMode::Unread;
+                    apply_filter(app).await?;
+                    app.status_message = "Showing unread articles".to_string();
+                }
+                AppEvent::FilterBookmarked => {
+                    app.filter_mode = FilterMode::Bookmarked;
+                    apply_filter(app).await?;
+                    app.status_message = "Showing bookmarked articles".to_string();
+                }
+                AppEvent::Search => {
+                    // TODO: Implement search input
+                    app.status_message = "Search not yet implemented".to_string();
+                }
+                AppEvent::None => {}
             }
         }
     }
+}
 
 async fn apply_filter(app: &mut AppState) -> Result<()> {
     app.filtered_articles = match &app.filter_mode {
