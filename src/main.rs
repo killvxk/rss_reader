@@ -1,5 +1,6 @@
 use rss_reader::db::create_pool;
 use rss_reader::core::feed_manager::FeedManager;
+use rss_reader::ui;
 use std::env;
 
 #[tokio::main]
@@ -9,14 +10,16 @@ async fn main() -> anyhow::Result<()> {
 
     let args: Vec<String> = env::args().collect();
 
-    if args.len() < 2 {
-        print_usage();
-        return Ok(());
-    }
-
     // 连接数据库
     let db_url = env::var("DATABASE_URL").unwrap_or_else(|_| "sqlite:rss_reader.db".to_string());
     let pool = create_pool(&db_url).await?;
+
+    // 如果没有参数，启动 TUI 模式
+    if args.len() < 2 {
+        return ui::run_tui(pool).await;
+    }
+
+    // CLI 模式
     let manager = FeedManager::new(pool.clone());
 
     match args[1].as_str() {
