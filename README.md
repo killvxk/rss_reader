@@ -1,5 +1,9 @@
 # RSS Reader
 
+[![CI](https://github.com/killvxk/rss_reader/actions/workflows/ci.yml/badge.svg)](https://github.com/killvxk/rss_reader/actions/workflows/ci.yml)
+[![Release](https://github.com/killvxk/rss_reader/actions/workflows/release.yml/badge.svg)](https://github.com/killvxk/rss_reader/actions/workflows/release.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 一个基于 Rust 的高性能 TUI RSS 阅读器，支持并发拉取、全文搜索和标签管理。
 
 ## 功能特性
@@ -416,11 +420,7 @@ MIT License
 - [sqlx](https://github.com/launchbadge/sqlx) - 异步 SQL 工具包
 - [tokio](https://tokio.rs/) - 异步运行时
 - [reqwest](https://github.com/seanmonstar/reqwest) - HTTP 客户端
-
-## 联系方式
-
-- Issue Tracker: https://github.com/yourusername/rss-reader/issues
-- Email: your.email@example.com
+- [ratatui](https://github.com/ratatui-org/ratatui) - TUI 框架
 
 ---
 
