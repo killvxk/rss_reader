@@ -17,6 +17,13 @@ if [ ! -f "$RSS_READER" ]; then
     exit 1
 fi
 
+# 创建数据库文件
+echo "📁 创建数据库文件..."
+rm -f rss_reader.db rss_reader.db-shm rss_reader.db-wal
+touch rss_reader.db
+chmod 666 rss_reader.db
+echo ""
+
 echo "📰 添加默认 RSS 源（28 个）..."
 echo ""
 

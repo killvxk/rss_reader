@@ -71,9 +71,23 @@ async fn run_app(
                     }
                     AppEvent::MoveUp => {
                         app.move_selection_up();
+                        // 如果在 Feeds 面板，切换到对应 feed 的文章
+                        if app.active_panel == state::Panel::Feeds {
+                            if let Some(feed) = app.selected_feed() {
+                                app.filter_mode = state::FilterMode::ByFeed(feed.id);
+                                apply_filter(app).await?;
+                            }
+                        }
                     }
                     AppEvent::MoveDown => {
                         app.move_selection_down();
+                        // 如果在 Feeds 面板，切换到对应 feed 的文章
+                        if app.active_panel == state::Panel::Feeds {
+                            if let Some(feed) = app.selected_feed() {
+                                app.filter_mode = state::FilterMode::ByFeed(feed.id);
+                                apply_filter(app).await?;
+                            }
+                        }
                     }
                     AppEvent::SwitchPanelLeft => {
                         app.switch_panel_left();
