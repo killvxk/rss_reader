@@ -2,6 +2,12 @@
 name = "rss-reader"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+authors = ["RSS Reader Contributors"]
+description = "A high-performance TUI RSS reader built with Rust"
+repository = "https://github.com/killvxk/rss_reader"
+keywords = ["rss", "feed", "reader", "tui", "terminal"]
+categories = ["command-line-utilities"]
 
 [lib]
 name = "rss_reader"
