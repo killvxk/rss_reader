@@ -1,10 +1,10 @@
-use sqlx::SqlitePool;
 use chrono::Utc;
-use rss_reader::db::{create_pool, feeds::insert_feed};
 use rss_reader::db::articles::{
-    insert_article, get_articles_by_feed, search_articles,
-    mark_as_read, toggle_bookmark, get_unread_count
+    get_articles_by_feed, get_unread_count, insert_article, mark_as_read, search_articles,
+    toggle_bookmark,
 };
+use rss_reader::db::{create_pool, feeds::insert_feed};
+use sqlx::SqlitePool;
 
 #[tokio::test]
 async fn test_article_operations() {
@@ -22,15 +22,15 @@ async fn test_article_operations() {
         "Test Article",
         "http://test.com/article1",
         Some("Content about Rust programming"),
-        Utc::now()
-    ).await.unwrap();
+        Utc::now(),
+    )
+    .await
+    .unwrap();
 
     assert!(article_id > 0);
 
     // 查询文章
-    let articles = get_articles_by_feed(&pool, feed_id, 10, 0)
-        .await
-        .unwrap();
+    let articles = get_articles_by_feed(&pool, feed_id, 10, 0).await.unwrap();
     assert_eq!(articles.len(), 1);
 
     // 标记已读
@@ -42,8 +42,6 @@ async fn test_article_operations() {
     toggle_bookmark(&pool, article_id).await.unwrap();
 
     // 全文搜索
-    let results = search_articles(&pool, "Rust", 10, 0)
-        .await
-        .unwrap();
+    let results = search_articles(&pool, "Rust", 10, 0).await.unwrap();
     assert_eq!(results.len(), 1);
 }

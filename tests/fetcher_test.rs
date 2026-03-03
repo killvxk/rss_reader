@@ -1,7 +1,7 @@
-use wiremock::{MockServer, Mock, ResponseTemplate};
-use wiremock::matchers::{method, path};
 use rss_reader::fetcher::http::fetch_feed;
-use rss_reader::fetcher::parser::{parse_feed, ParsedFeed, ParsedArticle};
+use rss_reader::fetcher::parser::{parse_feed, ParsedArticle, ParsedFeed};
+use wiremock::matchers::{method, path};
+use wiremock::{Mock, MockServer, ResponseTemplate};
 
 #[tokio::test]
 async fn test_fetch_feed_success() {
@@ -36,10 +36,7 @@ async fn test_fetch_feed_timeout() {
     // 配置延迟响应（超过超时时间）
     Mock::given(method("GET"))
         .and(path("/slow"))
-        .respond_with(
-            ResponseTemplate::new(200)
-                .set_delay(Duration::from_secs(35))
-        )
+        .respond_with(ResponseTemplate::new(200).set_delay(Duration::from_secs(35)))
         .mount(&mock_server)
         .await;
 

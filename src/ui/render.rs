@@ -1,3 +1,4 @@
+use crate::ui::state::{AppState, Panel};
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
@@ -5,15 +6,26 @@ use ratatui::{
     widgets::{Block, Borders, List, ListItem, Paragraph, Wrap},
     Frame,
 };
-use crate::ui::state::{AppState, Panel};
+use regex::Regex;
+
+/// 清理 HTML 标签，转换为纯文本
+fn clean_html(html: &str) -> String {
+    // 移除 HTML 标签
+    let re = Regex::new(r"<[^>]*>").unwrap();
+    let cleaned = re.replace_all(html, "");
+
+    // 清理多余的空白字符
+    let re_whitespace = Regex::new(r"\s+").unwrap();
+    re_whitespace.replace_all(&cleaned, " ").trim().to_string()
+}
 
 pub fn draw(f: &mut Frame, app: &AppState) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Length(3),  // Header
-            Constraint::Min(0),     // Main content
-            Constraint::Length(3),  // Footer
+            Constraint::Length(3), // Header
+            Constraint::Min(0),    // Main content
+            Constraint::Length(3), // Footer
         ])
         .split(f.size());
 
@@ -24,9 +36,9 @@ pub fn draw(f: &mut Frame, app: &AppState) {
     let main_chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([
-            Constraint::Percentage(20),  // Feeds
-            Constraint::Percentage(40),  // Articles
-            Constraint::Percentage(40),  // Preview
+            Constraint::Percentage(20), // Feeds
+            Constraint::Percentage(40), // Articles
+            Constraint::Percentage(40), // Preview
         ])
         .split(chunks[1]);
 
@@ -73,7 +85,9 @@ fn draw_feeds_panel(f: &mut Frame, app: &AppState, area: Rect) {
         .enumerate()
         .map(|(i, feed)| {
             let style = if i == app.selected_feed_index && is_active {
-                Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)
+                Style::default()
+                    .fg(Color::Yellow)
+                    .add_modifier(Modifier::BOLD)
             } else {
                 Style::default()
             };
@@ -83,13 +97,12 @@ fn draw_feeds_panel(f: &mut Frame, app: &AppState, area: Rect) {
         })
         .collect();
 
-    let list = List::new(items)
-        .block(
-            Block::default()
-                .borders(Borders::ALL)
-                .title(format!(" Feeds ({}) ", app.feeds.len()))
-                .border_style(border_style),
-        );
+    let list = List::new(items).block(
+        Block::default()
+            .borders(Borders::ALL)
+            .title(format!(" Feeds ({}) ", app.feeds.len()))
+            .border_style(border_style),
+    );
 
     f.render_widget(list, area);
 }
@@ -108,7 +121,9 @@ fn draw_articles_panel(f: &mut Frame, app: &AppState, area: Rect) {
         .enumerate()
         .map(|(i, article)| {
             let style = if i == app.selected_article_index && is_active {
-                Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)
+                Style::default()
+                    .fg(Color::Yellow)
+                    .add_modifier(Modifier::BOLD)
             } else if article.is_read {
                 Style::default().fg(Color::DarkGray)
             } else {
@@ -117,26 +132,34 @@ fn draw_articles_panel(f: &mut Frame, app: &AppState, area: Rect) {
 
             let read_marker = if article.is_read { " " } else { "●" };
             let bookmark_marker = if article.is_bookmarked { "⭐" } else { " " };
-            let content = format!("{} {} {}", read_marker, bookmark_marker, article.title);
+            let title = clean_html(&article.title);
+            let content = format!("{} {} {}", read_marker, bookmark_marker, title);
 
             ListItem::new(content).style(style)
         })
         .collect();
 
     let title = match &app.filter_mode {
-        crate::ui::state::FilterMode::All => format!(" Articles ({}) ", app.filtered_articles.len()),
-        crate::ui::state::FilterMode::Unread => format!(" Unread ({}) ", app.filtered_articles.len()),
-        crate::ui::state::FilterMode::Bookmarked => format!(" Bookmarked ({}) ", app.filtered_articles.len()),
-        crate::ui::state::FilterMode::ByFeed(_) => format!(" Articles ({}) ", app.filtered_articles.len()),
+        crate::ui::state::FilterMode::All => {
+            format!(" Articles ({}) ", app.filtered_articles.len())
+        }
+        crate::ui::state::FilterMode::Unread => {
+            format!(" Unread ({}) ", app.filtered_articles.len())
+        }
+        crate::ui::state::FilterMode::Bookmarked => {
+            format!(" Bookmarked ({}) ", app.filtered_articles.len())
+        }
+        crate::ui::state::FilterMode::ByFeed(_) => {
+            format!(" Articles ({}) ", app.filtered_articles.len())
+        }
     };
 
-    let list = List::new(items)
-        .block(
-            Block::default()
-                .borders(Borders::ALL)
-                .title(title)
-                .border_style(border_style),
-        );
+    let list = List::new(items).block(
+        Block::default()
+            .borders(Borders::ALL)
+            .title(title)
+            .border_style(border_style),
+    );
 
     f.render_widget(list, area);
 }
@@ -153,7 +176,7 @@ fn draw_preview_panel(f: &mut Frame, app: &AppState, area: Rect) {
         let mut text = Vec::new();
         text.push(Line::from(vec![
             Span::styled("Title: ", Style::default().add_modifier(Modifier::BOLD)),
-            Span::raw(&article.title),
+            Span::raw(clean_html(&article.title)),
         ]));
         text.push(Line::from(""));
         text.push(Line::from(vec![
@@ -170,7 +193,11 @@ fn draw_preview_panel(f: &mut Frame, app: &AppState, area: Rect) {
             Span::styled("Status: ", Style::default().add_modifier(Modifier::BOLD)),
             Span::raw(if article.is_read { "Read" } else { "Unread" }),
             Span::raw(" | "),
-            Span::raw(if article.is_bookmarked { "Bookmarked" } else { "Not bookmarked" }),
+            Span::raw(if article.is_bookmarked {
+                "Bookmarked"
+            } else {
+                "Not bookmarked"
+            }),
         ]));
         text.push(Line::from(""));
         text.push(Line::from(Span::styled(
@@ -180,7 +207,7 @@ fn draw_preview_panel(f: &mut Frame, app: &AppState, area: Rect) {
         text.push(Line::from(""));
 
         if let Some(content) = &article.content {
-            text.push(Line::from(content.as_str()));
+            text.push(Line::from(clean_html(content)));
         } else {
             text.push(Line::from(Span::styled(
                 "No content available",

@@ -1,4 +1,4 @@
-use crate::db::schema::{Feed, Article};
+use crate::db::schema::{Article, Feed};
 use sqlx::SqlitePool;
 
 #[derive(Debug, Clone, Copy, PartialEq)]

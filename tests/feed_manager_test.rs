@@ -1,8 +1,8 @@
-use sqlx::SqlitePool;
-use wiremock::{MockServer, Mock, ResponseTemplate};
-use wiremock::matchers::{method, path};
-use rss_reader::db::create_pool;
 use rss_reader::core::feed_manager::FeedManager;
+use rss_reader::db::create_pool;
+use sqlx::SqlitePool;
+use wiremock::matchers::{method, path};
+use wiremock::{Mock, MockServer, ResponseTemplate};
 
 #[tokio::test]
 async fn test_fetch_all_feeds() {

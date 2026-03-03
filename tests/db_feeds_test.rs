@@ -1,6 +1,6 @@
-use sqlx::SqlitePool;
+use rss_reader::db::feeds::{get_all_feeds, get_feed_by_url, insert_feed};
 use rss_reader::db::{create_pool, schema::Feed};
-use rss_reader::db::feeds::{insert_feed, get_all_feeds, get_feed_by_url};
+use sqlx::SqlitePool;
 
 #[tokio::test]
 async fn test_insert_and_query_feed() {
@@ -11,8 +11,10 @@ async fn test_insert_and_query_feed() {
         &pool,
         "Hacker News",
         "https://news.ycombinator.com/rss",
-        "tech"
-    ).await.unwrap();
+        "tech",
+    )
+    .await
+    .unwrap();
 
     assert!(feed_id > 0);
 

@@ -1,9 +1,9 @@
-use sqlx::SqlitePool;
-use anyhow::Result;
-use tokio::task::JoinHandle;
-use std::time::Duration;
-use crate::db::{feeds, articles, schema::Feed};
+use crate::db::{articles, feeds, schema::Feed};
 use crate::fetcher::{http::fetch_feed, parser::parse_feed};
+use anyhow::Result;
+use sqlx::SqlitePool;
+use std::time::Duration;
+use tokio::task::JoinHandle;
 
 pub struct FeedManager {
     pool: SqlitePool,
@@ -35,23 +35,20 @@ impl FeedManager {
             .into_iter()
             .map(|feed| {
                 let pool = self.pool.clone();
-                tokio::spawn(async move {
-                    Self::fetch_single_feed(pool, feed).await
-                })
+                tokio::spawn(async move { Self::fetch_single_feed(pool, feed).await })
             })
             .collect();
 
         // 等待所有任务完成，超时 30 秒
         let timeout_duration = Duration::from_secs(30);
-        let results = tokio::time::timeout(
-            timeout_duration,
-            futures::future::join_all(tasks)
-        ).await;
+        let results =
+            tokio::time::timeout(timeout_duration, futures::future::join_all(tasks)).await;
 
         match results {
-            Ok(results) => results.into_iter().map(|r| r.unwrap_or_else(|e| {
-                Err(anyhow::anyhow!("Task join error: {}", e))
-            })).collect(),
+            Ok(results) => results
+                .into_iter()
+                .map(|r| r.unwrap_or_else(|e| Err(anyhow::anyhow!("Task join error: {}", e))))
+                .collect(),
             Err(_) => {
                 tracing::error!("Fetch all feeds timeout");
                 vec![]
@@ -94,9 +91,11 @@ impl FeedManager {
                 &article.link,
                 article.content.as_deref(),
                 article.published,
-            ).await {
+            )
+            .await
+            {
                 Ok(id) if id > 0 => inserted_count += 1,
-                Ok(_) => {}, // 文章已存在
+                Ok(_) => {} // 文章已存在
                 Err(e) => tracing::warn!("Failed to insert article: {}", e),
             }
         }
@@ -104,7 +103,11 @@ impl FeedManager {
         // 更新拉取时间
         feeds::update_feed_fetch_time(&pool, feed.id).await?;
 
-        tracing::info!("Feed {} fetched: {} new articles", feed.title, inserted_count);
+        tracing::info!(
+            "Feed {} fetched: {} new articles",
+            feed.title,
+            inserted_count
+        );
         Ok(inserted_count)
     }
 }
@@ -119,7 +122,8 @@ mod tests {
         let pool = create_pool(":memory:").await.unwrap();
         let manager = FeedManager::new(pool);
 
-        let id = manager.add_feed("Test", "http://test.com", "test")
+        let id = manager
+            .add_feed("Test", "http://test.com", "test")
             .await
             .unwrap();
         assert!(id > 0);

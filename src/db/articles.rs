@@ -1,7 +1,7 @@
-use sqlx::SqlitePool;
+use super::schema::Article;
 use anyhow::Result;
 use chrono::{DateTime, Utc};
-use super::schema::Article;
+use sqlx::SqlitePool;
 
 pub async fn insert_article(
     pool: &SqlitePool,
@@ -15,7 +15,7 @@ pub async fn insert_article(
     let result = sqlx::query(
         "INSERT INTO articles (feed_id, title, link, content, published)
          VALUES (?, ?, ?, ?, ?)
-         ON CONFLICT(link) DO NOTHING"
+         ON CONFLICT(link) DO NOTHING",
     )
     .bind(feed_id)
     .bind(title)
@@ -40,7 +40,7 @@ pub async fn get_articles_by_feed(
          FROM articles
          WHERE feed_id = ?
          ORDER BY published DESC
-         LIMIT ? OFFSET ?"
+         LIMIT ? OFFSET ?",
     )
     .bind(feed_id)
     .bind(limit)
@@ -51,17 +51,13 @@ pub async fn get_articles_by_feed(
     Ok(articles)
 }
 
-pub async fn get_all_articles(
-    pool: &SqlitePool,
-    limit: i64,
-    offset: i64,
-) -> Result<Vec<Article>> {
+pub async fn get_all_articles(pool: &SqlitePool, limit: i64, offset: i64) -> Result<Vec<Article>> {
     let articles = sqlx::query_as::<_, Article>(
         "SELECT id, feed_id, title, link, content, published,
                 is_read, is_bookmarked, created_at
          FROM articles
          ORDER BY published DESC
-         LIMIT ? OFFSET ?"
+         LIMIT ? OFFSET ?",
     )
     .bind(limit)
     .bind(offset)
@@ -84,7 +80,7 @@ pub async fn search_articles(
          JOIN articles_fts fts ON a.id = fts.rowid
          WHERE articles_fts MATCH ?
          ORDER BY a.published DESC
-         LIMIT ? OFFSET ?"
+         LIMIT ? OFFSET ?",
     )
     .bind(query)
     .bind(limit)
@@ -96,24 +92,20 @@ pub async fn search_articles(
 }
 
 pub async fn mark_as_read(pool: &SqlitePool, article_id: i64, is_read: bool) -> Result<()> {
-    sqlx::query(
-        "UPDATE articles SET is_read = ? WHERE id = ?"
-    )
-    .bind(is_read)
-    .bind(article_id)
-    .execute(pool)
-    .await?;
+    sqlx::query("UPDATE articles SET is_read = ? WHERE id = ?")
+        .bind(is_read)
+        .bind(article_id)
+        .execute(pool)
+        .await?;
 
     Ok(())
 }
 
 pub async fn toggle_bookmark(pool: &SqlitePool, article_id: i64) -> Result<()> {
-    sqlx::query(
-        "UPDATE articles SET is_bookmarked = NOT is_bookmarked WHERE id = ?"
-    )
-    .bind(article_id)
-    .execute(pool)
-    .await?;
+    sqlx::query("UPDATE articles SET is_bookmarked = NOT is_bookmarked WHERE id = ?")
+        .bind(article_id)
+        .execute(pool)
+        .await?;
 
     Ok(())
 }
@@ -137,7 +129,7 @@ pub async fn get_bookmarked_articles(
          FROM articles
          WHERE is_bookmarked = 1
          ORDER BY published DESC
-         LIMIT ? OFFSET ?"
+         LIMIT ? OFFSET ?",
     )
     .bind(limit)
     .bind(offset)
@@ -165,8 +157,10 @@ mod tests {
             "Title",
             "http://test.com/1",
             Some("Content"),
-            Utc::now()
-        ).await.unwrap();
+            Utc::now(),
+        )
+        .await
+        .unwrap();
 
         assert!(id > 0);
 

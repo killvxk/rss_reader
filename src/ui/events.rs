@@ -1,5 +1,5 @@
-use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
 use anyhow::Result;
+use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
 use std::time::Duration;
 
 pub enum AppEvent {
@@ -31,7 +31,9 @@ pub fn handle_key_event(key: KeyEvent) -> AppEvent {
         (KeyCode::Char('j'), KeyModifiers::NONE) | (KeyCode::Down, _) => AppEvent::MoveDown,
         (KeyCode::Char('k'), KeyModifiers::NONE) | (KeyCode::Up, _) => AppEvent::MoveUp,
         (KeyCode::Char('h'), KeyModifiers::NONE) | (KeyCode::Left, _) => AppEvent::SwitchPanelLeft,
-        (KeyCode::Char('l'), KeyModifiers::NONE) | (KeyCode::Right, _) => AppEvent::SwitchPanelRight,
+        (KeyCode::Char('l'), KeyModifiers::NONE) | (KeyCode::Right, _) => {
+            AppEvent::SwitchPanelRight
+        }
 
         // Actions
         (KeyCode::Enter, _) => AppEvent::OpenInBrowser,

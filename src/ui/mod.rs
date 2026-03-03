@@ -1,10 +1,10 @@
-pub mod state;
 pub mod events;
 pub mod render;
+pub mod state;
 
 use anyhow::Result;
 use crossterm::{
-    event::{DisableMouseCapture, EnableMouseCapture, Event, KeyEvent},
+    event::{DisableMouseCapture, EnableMouseCapture, Event},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
@@ -12,10 +12,10 @@ use ratatui::{backend::CrosstermBackend, Terminal};
 use std::io;
 use std::time::Duration;
 
-use crate::db::{feeds, articles};
 use crate::core::feed_manager::FeedManager;
-use state::{AppState, FilterMode};
+use crate::db::{articles, feeds};
 use events::{handle_key_event, poll_event, AppEvent};
+use state::{AppState, FilterMode};
 
 pub async fn run_tui(pool: sqlx::SqlitePool) -> Result<()> {
     // Setup terminal
@@ -61,11 +61,10 @@ async fn run_app(
     loop {
         terminal.draw(|f| render::draw(f, app))?;
 
-        if let Some(event) = poll_event(Duration::from_millis(100))? {
-            if let Event::Key(key) = event {
-                let app_event = handle_key_event(key);
+        if let Some(Event::Key(key)) = poll_event(Duration::from_millis(100))? {
+            let app_event = handle_key_event(key);
 
-                match app_event {
+            match app_event {
                     AppEvent::Quit => {
                         return Ok(());
                     }
@@ -99,13 +98,21 @@ async fn run_app(
                         if let Some(article) = app.selected_article() {
                             let article_id = article.id;
                             let new_status = !article.is_read;
-                            if let Err(e) = articles::mark_as_read(&app.pool, article_id, new_status).await {
+                            if let Err(e) =
+                                articles::mark_as_read(&app.pool, article_id, new_status).await
+                            {
                                 app.status_message = format!("Error: {}", e);
                             } else {
                                 // Reload articles
-                                app.articles = articles::get_all_articles(&app.pool, 1000, 0).await?;
+                                app.articles =
+                                    articles::get_all_articles(&app.pool, 1000, 0).await?;
                                 apply_filter(app).await?;
-                                app.status_message = if new_status { "Marked as read" } else { "Marked as unread" }.to_string();
+                                app.status_message = if new_status {
+                                    "Marked as read"
+                                } else {
+                                    "Marked as unread"
+                                }
+                                .to_string();
                             }
                         }
                     }
@@ -116,7 +123,8 @@ async fn run_app(
                                 app.status_message = format!("Error: {}", e);
                             } else {
                                 // Reload articles
-                                app.articles = articles::get_all_articles(&app.pool, 1000, 0).await?;
+                                app.articles =
+                                    articles::get_all_articles(&app.pool, 1000, 0).await?;
                                 apply_filter(app).await?;
                                 app.status_message = "Bookmark toggled".to_string();
                             }
@@ -132,7 +140,8 @@ async fn run_app(
                                 app.status_message = format!("Opened: {}", url);
                                 // Mark as read
                                 let _ = articles::mark_as_read(&app.pool, article_id, true).await;
-                                app.articles = articles::get_all_articles(&app.pool, 1000, 0).await?;
+                                app.articles =
+                                    articles::get_all_articles(&app.pool, 1000, 0).await?;
                                 apply_filter(app).await?;
                             }
                         }
@@ -143,7 +152,8 @@ async fn run_app(
 
                         let results = manager.fetch_all_feeds().await;
                         let success_count = results.iter().filter(|r| r.is_ok()).count();
-                        let total_articles: usize = results.iter().filter_map(|r| r.as_ref().ok()).sum();
+                        let total_articles: usize =
+                            results.iter().filter_map(|r| r.as_ref().ok()).sum();
 
                         app.feeds = feeds::get_all_feeds(&app.pool).await?;
                         app.articles = articles::get_all_articles(&app.pool, 1000, 0).await?;
@@ -181,14 +191,28 @@ async fn run_app(
             }
         }
     }
-}
 
 async fn apply_filter(app: &mut AppState) -> Result<()> {
     app.filtered_articles = match &app.filter_mode {
         FilterMode::All => app.articles.clone(),
-        FilterMode::Unread => app.articles.iter().filter(|a| !a.is_read).cloned().collect(),
-        FilterMode::Bookmarked => app.articles.iter().filter(|a| a.is_bookmarked).cloned().collect(),
-        FilterMode::ByFeed(feed_id) => app.articles.iter().filter(|a| a.feed_id == *feed_id).cloned().collect(),
+        FilterMode::Unread => app
+            .articles
+            .iter()
+            .filter(|a| !a.is_read)
+            .cloned()
+            .collect(),
+        FilterMode::Bookmarked => app
+            .articles
+            .iter()
+            .filter(|a| a.is_bookmarked)
+            .cloned()
+            .collect(),
+        FilterMode::ByFeed(feed_id) => app
+            .articles
+            .iter()
+            .filter(|a| a.feed_id == *feed_id)
+            .cloned()
+            .collect(),
     };
 
     // Reset selection if out of bounds

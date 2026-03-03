@@ -1,10 +1,10 @@
-pub mod schema;
-pub mod feeds;
 pub mod articles;
+pub mod feeds;
+pub mod schema;
 pub mod tags;
 
-use sqlx::{SqlitePool, sqlite::SqlitePoolOptions};
 use anyhow::Result;
+use sqlx::{sqlite::SqlitePoolOptions, SqlitePool};
 
 pub async fn create_pool(database_url: &str) -> Result<SqlitePool> {
     let pool = SqlitePoolOptions::new()
@@ -13,9 +13,7 @@ pub async fn create_pool(database_url: &str) -> Result<SqlitePool> {
         .await?;
 
     // 运行迁移
-    sqlx::migrate!("./migrations")
-        .run(&pool)
-        .await?;
+    sqlx::migrate!("./migrations").run(&pool).await?;
 
     Ok(pool)
 }

@@ -1,5 +1,5 @@
+use anyhow::{Context, Result};
 use reqwest::Client;
-use anyhow::{Result, Context};
 use std::time::Duration;
 
 pub async fn fetch_feed(url: &str) -> Result<String> {

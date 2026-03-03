@@ -1,5 +1,5 @@
-use rss_reader::db::create_pool;
 use rss_reader::core::feed_manager::FeedManager;
+use rss_reader::db::create_pool;
 use rss_reader::ui;
 use std::env;
 
@@ -37,30 +37,30 @@ async fn main() -> anyhow::Result<()> {
                 Err(e) => println!("✗ Failed to add feed: {}", e),
             }
         }
-        "list" => {
-            match manager.get_all_feeds().await {
-                Ok(feeds) => {
-                    if feeds.is_empty() {
-                        println!("No feeds found. Add one with: rss-reader add <title> <url> <category>");
-                    } else {
-                        println!("\n📰 Feeds ({}):", feeds.len());
-                        println!("{:-<80}", "");
-                        for feed in feeds {
-                            println!("  [{}] {} ({})", feed.id, feed.title, feed.category);
-                            println!("      URL: {}", feed.url);
-                            if let Some(last_fetched) = feed.last_fetched {
-                                println!("      Last fetched: {}", last_fetched);
-                            }
-                            if let Some(error) = feed.fetch_error {
-                                println!("      ⚠ Error: {}", error);
-                            }
-                            println!();
+        "list" => match manager.get_all_feeds().await {
+            Ok(feeds) => {
+                if feeds.is_empty() {
+                    println!(
+                        "No feeds found. Add one with: rss-reader add <title> <url> <category>"
+                    );
+                } else {
+                    println!("\n📰 Feeds ({}):", feeds.len());
+                    println!("{:-<80}", "");
+                    for feed in feeds {
+                        println!("  [{}] {} ({})", feed.id, feed.title, feed.category);
+                        println!("      URL: {}", feed.url);
+                        if let Some(last_fetched) = feed.last_fetched {
+                            println!("      Last fetched: {}", last_fetched);
                         }
+                        if let Some(error) = feed.fetch_error {
+                            println!("      ⚠ Error: {}", error);
+                        }
+                        println!();
                     }
                 }
-                Err(e) => println!("✗ Failed to list feeds: {}", e),
             }
-        }
+            Err(e) => println!("✗ Failed to list feeds: {}", e),
+        },
         "fetch" => {
             println!("🔄 Fetching all feeds...\n");
             let results = manager.fetch_all_feeds().await;
@@ -146,7 +146,8 @@ async fn main() -> anyhow::Result<()> {
 }
 
 fn print_usage() {
-    println!(r#"
+    println!(
+        r#"
 RSS Reader - A simple RSS feed reader
 
 USAGE:
@@ -168,6 +169,6 @@ EXAMPLES:
 
 ENVIRONMENT:
     DATABASE_URL    Database connection string (default: sqlite:rss_reader.db)
-"#);
+"#
+    );
 }
-
