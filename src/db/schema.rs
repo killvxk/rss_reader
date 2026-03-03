@@ -1,4 +1,3 @@
-use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 
@@ -8,7 +7,7 @@ pub struct Feed {
     pub title: String,
     pub url: String,
     pub category: String,
-    pub last_fetched: Option<DateTime<Utc>>,
+    pub last_fetched: Option<String>,
     pub fetch_error: Option<String>,
 }
 
@@ -19,10 +18,10 @@ pub struct Article {
     pub title: String,
     pub link: String,
     pub content: Option<String>,
-    pub published: DateTime<Utc>,
+    pub published: String,
     pub is_read: bool,
     pub is_bookmarked: bool,
-    pub created_at: DateTime<Utc>,
+    pub created_at: String,
 }
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]

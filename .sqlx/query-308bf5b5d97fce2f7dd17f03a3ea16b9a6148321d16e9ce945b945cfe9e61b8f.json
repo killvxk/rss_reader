@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE feeds SET last_fetched = ?, fetch_error = NULL WHERE id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "308bf5b5d97fce2f7dd17f03a3ea16b9a6148321d16e9ce945b945cfe9e61b8f"
+}

@@ -1,4 +1,5 @@
 pub mod schema;
+pub mod feeds;
 
 use sqlx::{SqlitePool, sqlite::SqlitePoolOptions};
 use anyhow::Result;

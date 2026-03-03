@@ -3,6 +3,10 @@ name = "rss-reader"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+name = "rss_reader"
+path = "src/lib.rs"
+
 [dependencies]
 ratatui = "0.26"
 crossterm = "0.27"
