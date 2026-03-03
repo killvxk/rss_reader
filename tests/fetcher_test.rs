@@ -1,6 +1,7 @@
 use wiremock::{MockServer, Mock, ResponseTemplate};
 use wiremock::matchers::{method, path};
 use rss_reader::fetcher::http::fetch_feed;
+use rss_reader::fetcher::parser::{parse_feed, ParsedFeed, ParsedArticle};
 
 #[tokio::test]
 async fn test_fetch_feed_success() {
@@ -45,5 +46,34 @@ async fn test_fetch_feed_timeout() {
     let url = format!("{}/slow", mock_server.uri());
     let result = fetch_feed(&url).await;
 
+    assert!(result.is_err());
+}
+
+#[tokio::test]
+async fn test_parse_rss_feed() {
+    let xml = include_str!("fixtures/sample_rss.xml");
+    let result = parse_feed(xml);
+
+    assert!(result.is_ok());
+    let feed = result.unwrap();
+    assert_eq!(feed.title, "Test Feed");
+    assert_eq!(feed.articles.len(), 2);
+    assert_eq!(feed.articles[0].title, "Test Article 1");
+}
+
+#[tokio::test]
+async fn test_parse_atom_feed() {
+    let xml = include_str!("fixtures/sample_atom.xml");
+    let result = parse_feed(xml);
+
+    assert!(result.is_ok());
+    let feed = result.unwrap();
+    assert_eq!(feed.title, "Test Atom Feed");
+    assert_eq!(feed.articles.len(), 1);
+}
+
+#[tokio::test]
+async fn test_parse_invalid_feed() {
+    let result = parse_feed("<invalid>xml</invalid>");
     assert!(result.is_err());
 }
