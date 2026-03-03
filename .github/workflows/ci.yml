@@ -85,9 +85,9 @@ jobs:
             artifact_name: rss-reader
             asset_name: rss-reader-linux-amd64
           - os: macos-latest
-            target: x86_64-apple-darwin
+            target: aarch64-apple-darwin
             artifact_name: rss-reader
-            asset_name: rss-reader-macos-amd64
+            asset_name: rss-reader-macos-arm64
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             artifact_name: rss-reader.exe
