@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Test Feed</title>
+    <link>http://example.com</link>
+    <description>Test RSS Feed</description>
+    <item>
+      <title>Test Article 1</title>
+      <link>http://example.com/article1</link>
+      <description>This is a test article about Rust</description>
+      <pubDate>Mon, 03 Mar 2026 10:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Test Article 2</title>
+      <link>http://example.com/article2</link>
+      <description>Another test article</description>
+      <pubDate>Mon, 03 Mar 2026 09:00:00 GMT</pubDate>
+    </item>
+  </channel>
+</rss>
