@@ -85,26 +85,61 @@ async fn main() -> anyhow::Result<()> {
         "articles" => {
             use rss_reader::db::articles;
 
-            let limit = args.get(2).and_then(|s| s.parse().ok()).unwrap_or(10);
+            // 解析参数
+            let mut limit = 10;
+            let mut json_output = false;
+            let mut with_content = false;
+            let mut ids: Option<Vec<i64>> = None;
 
-            match articles::get_all_articles(&pool, limit, 0).await {
-                Ok(articles) => {
-                    if articles.is_empty() {
-                        println!("No articles found. Fetch feeds first with: rss-reader fetch");
-                    } else {
-                        println!("\n📄 Latest Articles ({}):", articles.len());
-                        println!("{:-<80}", "");
-                        for article in articles {
-                            let read_marker = if article.is_read { "✓" } else { " " };
-                            let bookmark_marker = if article.is_bookmarked { "⭐" } else { " " };
-                            println!("  [{}{}] {}", read_marker, bookmark_marker, article.title);
-                            println!("      {}", article.link);
-                            println!("      Published: {}", article.published);
-                            println!();
+            let mut i = 2;
+            while i < args.len() {
+                match args[i].as_str() {
+                    "--json" => json_output = true,
+                    "--with-content" => with_content = true,
+                    arg if arg.starts_with("--ids=") => {
+                        let ids_str = arg.strip_prefix("--ids=").unwrap();
+                        ids = Some(
+                            ids_str
+                                .split(',')
+                                .filter_map(|id| id.parse::<i64>().ok())
+                                .collect(),
+                        );
+                    }
+                    arg => {
+                        if let Ok(num) = arg.parse::<usize>() {
+                            limit = num;
                         }
                     }
                 }
-                Err(e) => println!("✗ Failed to list articles: {}", e),
+                i += 1;
+            }
+
+            // 查询文章
+            let articles = if let Some(ids) = ids {
+                articles::get_articles_by_ids(&pool, &ids).await?
+            } else {
+                articles::get_all_articles(&pool, limit as i64, 0).await?
+            };
+
+            // 输出
+            if json_output {
+                output_articles_json(&articles, with_content)?;
+            } else {
+                // 原有的人类可读格式输出
+                if articles.is_empty() {
+                    println!("No articles found. Fetch feeds first with: rss-reader fetch");
+                } else {
+                    println!("\n📄 Latest Articles ({}):", articles.len());
+                    println!("{:-<80}", "");
+                    for article in articles {
+                        let read_marker = if article.is_read { "✓" } else { " " };
+                        let bookmark_marker = if article.is_bookmarked { "⭐" } else { " " };
+                        println!("  [{}{}] {}", read_marker, bookmark_marker, article.title);
+                        println!("      {}", article.link);
+                        println!("      Published: {}", article.published);
+                        println!();
+                    }
+                }
             }
         }
         "search" => {
@@ -142,6 +177,44 @@ async fn main() -> anyhow::Result<()> {
         }
     }
 
+    Ok(())
+}
+
+fn output_articles_json(
+    articles: &[rss_reader::db::schema::Article],
+    with_content: bool,
+) -> anyhow::Result<()> {
+    use serde_json::json;
+
+    let articles_json: Vec<serde_json::Value> = articles
+        .iter()
+        .map(|article| {
+            let mut obj = json!({
+                "id": article.id,
+                "feed_id": article.feed_id,
+                "title": article.title,
+                "link": article.link,
+                "published": article.published,
+                "is_read": article.is_read,
+                "is_bookmarked": article.is_bookmarked,
+            });
+
+            if with_content {
+                if let Some(content) = &article.content {
+                    obj["content"] = json!(content);
+                }
+            }
+
+            obj
+        })
+        .collect();
+
+    let output = json!({
+        "articles": articles_json,
+        "total": articles.len(),
+    });
+
+    println!("{}", serde_json::to_string_pretty(&output)?);
     Ok(())
 }
 
