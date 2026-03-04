@@ -3,7 +3,7 @@ use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span, Text},
-    widgets::{Block, Borders, List, ListItem, Paragraph, Wrap},
+    widgets::{Block, Borders, Clear, List, ListItem, Paragraph, Wrap},
     Frame,
 };
 use regex::Regex;
@@ -298,10 +298,15 @@ fn draw_help_overlay(f: &mut Frame, area: Rect) {
         .title(" Help ")
         .style(Style::default().bg(Color::Black).fg(Color::White));
 
-    let paragraph = Paragraph::new(text).block(block);
+    let paragraph = Paragraph::new(text)
+        .block(block)
+        .style(Style::default().bg(Color::Black).fg(Color::White));
 
     // Center the help overlay
     let popup_area = centered_rect(60, 80, area);
+
+    // Clear the area first to prevent background content from showing through
+    f.render_widget(Clear, popup_area);
     f.render_widget(paragraph, popup_area);
 }
 
