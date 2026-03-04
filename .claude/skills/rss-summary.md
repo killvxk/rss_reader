@@ -1,18 +1,31 @@
 ---
 name: rss-summary
-description: This skill should be used when the user asks to "总结 RSS", "RSS 摘要", "今日重要新闻", "获取 RSS 消息", or wants to get an AI-filtered summary of important RSS articles.
-version: 0.1.0
+description: This skill should be used when the user asks to "总结 RSS", "RSS 摘要", "今日重要新闻", "获取 RSS 消息", or mentions wanting a summary of RSS articles.
 ---
 
 # RSS 摘要 Skill
 
-自动拉取最新 RSS 文章，使用 AI 分析重要性，生成按类别分组的简短摘要。
+## Overview
 
-## 使用方法
+自动拉取最新 RSS 文章，使用 AI 分析重要性，生成按类别分组的简短摘要。核心原则：AI 筛选 + 分类展示。
 
+## When to Use
+
+**触发条件：**
+- 用户想要快速了解今日重要新闻
+- 需要从大量 RSS 文章中筛选重点
+- 希望按类别查看技术/区块链/其他新闻
+
+**使用方式：**
 直接调用：`/rss-summary`
 
-## 执行流程
+## When NOT to Use
+
+- 需要查看所有文章（使用 `rss-reader articles` 命令）
+- 需要搜索特定关键词（使用 `rss-reader search` 命令）
+- 需要手动筛选文章（使用 TUI 界面）
+
+## Implementation
 
 ### 1. 检查可执行文件
 
@@ -169,3 +182,17 @@ cd /root/rss_reader && ./target/release/rss-reader articles --json --with-conten
 - **数据解析**：JSON 解析使用标准 JSON 库
 - **日期格式**：YYYY-MM-DD
 - **超时控制**：整个流程应在 5 分钟内完成，超时自动终止并提示
+
+## Common Mistakes
+
+**错误 1：跳过错误检查**
+- 问题：直接执行命令不检查可执行文件是否存在
+- 修复：始终先检查 `./target/release/rss-reader` 是否存在
+
+**错误 2：不处理空结果**
+- 问题：文章列表为空时继续执行导致错误
+- 修复：每个步骤都检查结果，空结果时提前退出并给出提示
+
+**错误 3：忽略 JSON 解析失败**
+- 问题：假设 JSON 总是有效的
+- 修复：捕获解析错误，显示原始输出并提示版本不兼容
