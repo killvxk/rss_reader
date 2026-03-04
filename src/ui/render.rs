@@ -293,10 +293,7 @@ fn draw_help_overlay(f: &mut Frame, area: Rect) {
 
     let text: Vec<Line> = help_text.iter().map(|s| Line::from(*s)).collect();
 
-    let block = Block::default()
-        .borders(Borders::ALL)
-        .title(" Help ")
-        .style(Style::default().bg(Color::Black).fg(Color::White));
+    let block = Block::default().borders(Borders::ALL).title(" Help ");
 
     let paragraph = Paragraph::new(text)
         .block(block)
