@@ -162,7 +162,10 @@ cd /root/rss_reader && ./target/release/rss-reader articles --json --with-conten
 
 ## 注意事项
 
-- 使用 Bash tool 执行所有命令
-- 所有命令都在 /root/rss_reader 目录下执行
-- JSON 解析使用标准 JSON 库
-- 日期格式：YYYY-MM-DD
+- **工具使用**：使用 Bash tool 执行所有命令
+- **工作目录**：所有命令都在 /root/rss_reader 目录下执行
+- **权限要求**：需要读取权限访问 `./target/release/rss-reader` 可执行文件
+- **网络访问**：fetch 命令需要网络连接访问 RSS 源
+- **数据解析**：JSON 解析使用标准 JSON 库
+- **日期格式**：YYYY-MM-DD
+- **超时控制**：整个流程应在 5 分钟内完成，超时自动终止并提示
