@@ -149,7 +149,7 @@ cargo build --release
 使用 Claude Code skill 自动获取并总结重要 RSS 消息：
 
 ```bash
-/rss-summary
+/rss
 ```
 
 功能：
@@ -210,7 +210,7 @@ ENVIRONMENT:
 ```
 rss-reader/
 ├── src/
-│   ├── main.rs              # CLI 入口
+│   ├── main.rs              # CLI/TUI 入口
 │   ├── lib.rs               # 库入口
 │   ├── db/                  # 数据库层
 │   │   ├── mod.rs
@@ -222,9 +222,22 @@ rss-reader/
 │   │   ├── mod.rs
 │   │   ├── http.rs          # HTTP 客户端
 │   │   └── parser.rs        # RSS/Atom 解析器
-│   └── core/                # 业务逻辑层
+│   ├── core/                # 业务逻辑层
+│   │   ├── mod.rs
+│   │   └── feed_manager.rs  # Feed 管理器
+│   └── ui/                  # TUI 界面层
 │       ├── mod.rs
-│       └── feed_manager.rs  # Feed 管理器
+│       ├── state.rs         # 应用状态
+│       ├── render.rs        # 界面渲染
+│       └── events.rs        # 事件处理
+├── .claude/                 # Claude Code 配置
+│   └── skills/
+│       └── rss/
+│           └── SKILL.md     # RSS 摘要 skill
+├── .github/                 # GitHub Actions
+│   └── workflows/
+│       ├── ci.yml           # CI 工作流
+│       └── release.yml      # 发布工作流
 ├── migrations/              # 数据库迁移
 │   └── 20260303000001_init.sql
 ├── tests/                   # 集成测试
@@ -235,6 +248,10 @@ rss-reader/
 │   ├── db_tags_test.rs
 │   ├── fetcher_test.rs
 │   └── feed_manager_test.rs
+├── benches/                 # 性能测试
+├── docs/                    # 文档
+│   └── plans/               # 设计和实现计划
+├── init_feeds.sh            # 初始化脚本
 └── Cargo.toml
 ```
 

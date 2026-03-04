@@ -67,18 +67,12 @@ pub async fn get_all_articles(pool: &SqlitePool, limit: i64, offset: i64) -> Res
     Ok(articles)
 }
 
-pub async fn get_articles_by_ids(
-    pool: &SqlitePool,
-    ids: &[i64],
-) -> Result<Vec<Article>> {
+pub async fn get_articles_by_ids(pool: &SqlitePool, ids: &[i64]) -> Result<Vec<Article>> {
     if ids.is_empty() {
         return Ok(Vec::new());
     }
 
-    let placeholders = ids.iter()
-        .map(|_| "?")
-        .collect::<Vec<_>>()
-        .join(",");
+    let placeholders = ids.iter().map(|_| "?").collect::<Vec<_>>().join(",");
 
     let query = format!(
         "SELECT id, feed_id, title, link, content, published,

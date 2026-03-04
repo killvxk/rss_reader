@@ -1,5 +1,5 @@
 ---
-name: rss-summary
+name: rss
 description: This skill should be used when the user asks to "总结 RSS", "RSS 摘要", "今日重要新闻", "获取 RSS 消息", or mentions wanting a summary of RSS articles.
 ---
 
@@ -17,7 +17,7 @@ description: This skill should be used when the user asks to "总结 RSS", "RSS 
 - 希望按类别查看技术/区块链/其他新闻
 
 **使用方式：**
-直接调用：`/rss-summary`
+直接调用：`/rss`
 
 ## When NOT to Use
 
