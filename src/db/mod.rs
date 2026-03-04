@@ -7,9 +7,10 @@ use anyhow::Result;
 use sqlx::{sqlite::SqlitePoolOptions, SqlitePool};
 
 pub async fn create_pool(database_url: &str) -> Result<SqlitePool> {
+    // 确保数据库文件会被自动创建
     let pool = SqlitePoolOptions::new()
         .max_connections(5)
-        .connect(database_url)
+        .connect(&format!("{}?mode=rwc", database_url))
         .await?;
 
     // 运行迁移
