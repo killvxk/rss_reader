@@ -62,6 +62,12 @@ async fn run_app(
         terminal.draw(|f| render::draw(f, app))?;
 
         if let Some(Event::Key(key)) = poll_event(Duration::from_millis(100))? {
+            // If help is showing, any key closes it
+            if app.show_help {
+                app.show_help = false;
+                continue;
+            }
+
             let app_event = handle_key_event(key);
 
             match app_event {
