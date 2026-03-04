@@ -1,5 +1,5 @@
 use super::schema::Article;
-use anyhow::Result;
+use anyhow::{Context, Result};
 use chrono::{DateTime, Utc};
 use sqlx::SqlitePool;
 
@@ -65,6 +65,37 @@ pub async fn get_all_articles(pool: &SqlitePool, limit: i64, offset: i64) -> Res
     .await?;
 
     Ok(articles)
+}
+
+pub async fn get_articles_by_ids(
+    pool: &SqlitePool,
+    ids: &[i64],
+) -> Result<Vec<Article>> {
+    if ids.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    let placeholders = ids.iter()
+        .map(|_| "?")
+        .collect::<Vec<_>>()
+        .join(",");
+
+    let query = format!(
+        "SELECT id, feed_id, title, link, content, published,
+                is_read, is_bookmarked, created_at
+         FROM articles WHERE id IN ({}) ORDER BY published DESC",
+        placeholders
+    );
+
+    let mut query_builder = sqlx::query_as::<_, Article>(&query);
+    for id in ids {
+        query_builder = query_builder.bind(id);
+    }
+
+    query_builder
+        .fetch_all(pool)
+        .await
+        .context("Failed to fetch articles by IDs")
 }
 
 pub async fn search_articles(
