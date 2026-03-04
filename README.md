@@ -144,6 +144,42 @@ cargo build --release
 ./target/release/rss-reader search "async"
 ```
 
+### RSS 摘要 Skill
+
+使用 Claude Code skill 自动获取并总结重要 RSS 消息：
+
+```bash
+/rss-summary
+```
+
+功能：
+- 自动拉取最新 RSS 文章
+- AI 智能筛选重要消息（过滤琐碎内容）
+- 按类别分组生成简短摘要
+- 显示来源和统计信息
+
+输出示例：
+```
+📰 今日重要 RSS 摘要 (2026-03-04)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔧 Tech (3 条)
+
+• Rust 1.78 发布，引入新的异步运行时优化
+  来源: Rust Blog
+
+• Claude 下载量激增，成为美区应用商店榜首
+  来源: Readhub
+
+• OpenAI 与美军合作引发争议，ChatGPT 卸载量暴增
+  来源: Readhub
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+共筛选出 3 条重要消息（从 50 篇文章中）
+```
+
 ## 命令参考
 
 ```
@@ -157,7 +193,11 @@ COMMANDS:
     add <title> <url> <category>    Add a new RSS feed
     list                             List all feeds
     fetch                            Fetch all feeds and update articles
-    articles [limit]                 Show latest articles (default: 10)
+    articles [limit] [--json] [--with-content] [--ids=<ids>]
+                                     Show latest articles (default: 10)
+                                     --json: Output in JSON format
+                                     --with-content: Include article content
+                                     --ids: Query specific article IDs (comma-separated)
     search <query>                   Search articles by keyword
     help                             Show this help message
 
