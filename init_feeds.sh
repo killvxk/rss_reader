@@ -1,64 +1,220 @@
 #!/bin/bash
-# RSS Reader 初始化脚本 - 添加默认 RSS 源
+# RSS Reader 完整初始化脚本
+# 基于 yarb 项目精选的高频更新 RSS 源
+# 来源: https://github.com/Vu1nT0tal/yarb
 
-set -e
+# 不要在错误时退出，因为某些源可能已存在
+set +e
 
 DB_URL="${DATABASE_URL:-sqlite:rss_reader.db}"
 RSS_READER="./target/release/rss-reader"
 
-echo "🚀 初始化 RSS Reader..."
+# 颜色定义
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${CYAN}🚀 RSS Reader 完整初始化${NC}"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo "数据库: $DB_URL"
 echo ""
 
 # 检查可执行文件
 if [ ! -f "$RSS_READER" ]; then
-    echo "❌ 找不到 rss-reader 可执行文件"
+    echo -e "${RED}❌ 找不到 rss-reader 可执行文件${NC}"
     echo "请先运行: cargo build --release"
     exit 1
 fi
 
-echo "📰 添加默认 RSS 源..."
+# 统计变量
+total_added=0
+total_skipped=0
+
+# 添加源的辅助函数
+add_feed() {
+    local name="$1"
+    local url="$2"
+    local category="$3"
+
+    if $RSS_READER add "$name" "$url" "$category" 2>/dev/null; then
+        echo -e "  ${GREEN}✓${NC} $name"
+        ((total_added++))
+    else
+        echo -e "  ${YELLOW}⚠${NC} $name (已存在或失败)"
+        ((total_skipped++))
+    fi
+}
+
+echo -e "${CYAN}📰 开始添加 RSS 源...${NC}"
 echo ""
 
-# RSShub Feeds (有效的源)
-echo "添加 RSShub 类 RSS..."
-$RSS_READER add "小黑盒新闻" "https://rsshub.umzzz.com/xiaoheihe/news" "rsshub"
-$RSS_READER add "Readhub 日报" "https://rsshub.umzzz.com/readhub/daily" "rsshub"
-$RSS_READER add "HelloGitHub" "https://rsshub.umzzz.com/hellogithub/home" "rsshub"
-$RSS_READER add "RSShub 官方" "https://rsshub.isrss.com/" "rsshub"
-$RSS_READER add "RSShub Mirror 1" "https://rsshub.cups.moe/" "rsshub"
-$RSS_READER add "RSShub Mirror 2" "https://rss.spriple.org/" "rsshub"
+# ============================================
+# 中文安全资讯（每日多次更新）
+# ============================================
+echo -e "${YELLOW}━━━ 中文安全资讯 ━━━${NC}"
+add_feed "FreeBuf" "https://www.freebuf.com/feed" "security"
+add_feed "安全客" "https://api.anquanke.com/data/v1/rss" "security"
+add_feed "Seebug Paper" "https://paper.seebug.org/rss" "security"
+add_feed "嘶吼 RoarTalk" "https://www.4hou.com/feed" "security"
+add_feed "SecWiki News" "https://www.sec-wiki.com/news/rss" "security"
+add_feed "跳跳糖社区" "https://www.tttang.com/rss.xml" "security"
+add_feed "先知技术社区" "https://xz.aliyun.com/feed" "security"
+add_feed "unSafe.sh" "https://buaq.net/rss.xml" "security"
+add_feed "安全脉搏" "https://www.secpulse.com/feed" "security"
+echo ""
 
-# Tech Feeds (有效的源)
-echo "添加科技类 RSS..."
-$RSS_READER add "Hacker News" "https://hnrss.org/frontpage" "tech"
-$RSS_READER add "The Verge" "https://www.theverge.com/rss/index.xml" "tech"
-$RSS_READER add "UX Design" "https://uxdesign.cc/feed" "tech"
-$RSS_READER add "Rust Blog" "https://blog.rust-lang.org/feed.xml" "tech"
-$RSS_READER add "GitHub Blog" "https://github.blog/feed/" "tech"
-$RSS_READER add "Dev.to" "https://dev.to/feed" "tech"
+# ============================================
+# 国际安全资讯（每日更新）
+# ============================================
+echo -e "${YELLOW}━━━ 国际安全资讯 ━━━${NC}"
+add_feed "Krebs on Security" "https://krebsonsecurity.com/feed/" "security"
+add_feed "Schneier on Security" "https://www.schneier.com/feed/atom/" "security"
+add_feed "The Hacker News" "https://feeds.feedburner.com/TheHackersNews" "security"
+add_feed "Bleeping Computer" "https://www.bleepingcomputer.com/feed/" "security"
+add_feed "Dark Reading" "https://www.darkreading.com/rss.xml" "security"
+add_feed "Darknet" "http://feeds.feedburner.com/darknethackers" "security"
+add_feed "Graham Cluley" "http://feeds.feedburner.com/GrahamCluleysBlog" "security"
+add_feed "Security Affairs" "http://securityaffairs.co/wordpress/feed" "security"
+echo ""
 
-# Blockchain Feeds (有效的源)
-echo "添加区块链类 RSS..."
-$RSS_READER add "Decrypt" "https://decrypt.co/feed" "blockchain"
-$RSS_READER add "The Block" "https://www.theblock.co/rss.xml" "blockchain"
-$RSS_READER add "BlockBeats" "https://api.theblockbeats.news/v2/rss/all" "blockchain"
-$RSS_READER add "Odaily" "https://rss.odaily.news/rss/newsflash" "blockchain"
+# ============================================
+# 企业安全团队（定期更新）
+# ============================================
+echo -e "${YELLOW}━━━ 企业安全团队 ━━━${NC}"
+add_feed "腾讯玄武实验室" "https://xlab.tencent.com/cn/atom.xml" "security"
+add_feed "腾讯科恩实验室" "https://keenlab.tencent.com/zh/atom.xml" "security"
+add_feed "360 Netlab" "https://blog.netlab.360.com/rss" "security"
+add_feed "奇安信 A-TEAM" "https://blog.ateam.qianxin.com/atom.xml" "security"
+add_feed "Google Project Zero" "http://googleprojectzero.blogspot.com/feeds/posts/default" "security"
+add_feed "Microsoft Security" "https://www.microsoft.com/security/blog/feed/" "security"
+add_feed "GitHub Security Lab" "https://securitylab.github.com/research/feed.xml" "security"
+echo ""
+
+# ============================================
+# 漏洞情报（每日更新）
+# ============================================
+echo -e "${YELLOW}━━━ 漏洞情报 ━━━${NC}"
+add_feed "Seebug 漏洞社区" "https://www.seebug.org/rss/new" "vulnerability"
+add_feed "CISA Alerts" "https://www.cisa.gov/cybersecurity-advisories/all.xml" "vulnerability"
+add_feed "Packet Storm" "https://rss.packetstormsecurity.com/files/" "vulnerability"
+add_feed "Sploitus" "https://sploitus.com/rss" "vulnerability"
+add_feed "CXSecurity" "https://cxsecurity.com/wlb/rss/all/" "vulnerability"
+add_feed "Bugtraq" "http://seclists.org/rss/bugtraq.rss" "vulnerability"
+add_feed "华为安全通告" "https://www.huawei.com/cn/rss-feeds/psirt/rss" "vulnerability"
+echo ""
+
+# ============================================
+# 威胁研究（每日更新）
+# ============================================
+echo -e "${YELLOW}━━━ 威胁研究 ━━━${NC}"
+add_feed "The DFIR Report" "https://thedfirreport.com/feed/" "threat"
+add_feed "Malwarebytes Labs" "http://blog.malwarebytes.org/feed/" "threat"
+add_feed "Trustwave Blog" "https://www.trustwave.com/en-us/rss/trustwave-blog/" "threat"
+add_feed "Qualys Security" "https://community.qualys.com/blogs/securitylabs/feeds/posts" "threat"
+add_feed "Tenable Blog" "https://feeds.feedburner.com/tenable/qaXL" "threat"
+add_feed "CrowdStrike" "https://www.crowdstrike.com/blog/feed" "threat"
+echo ""
+
+# ============================================
+# 渗透测试（定期更新）
+# ============================================
+echo -e "${YELLOW}━━━ 渗透测试 ━━━${NC}"
+add_feed "PortSwigger Blog" "https://portswigger.net/blog/rss" "pentest"
+add_feed "Offensive Security" "http://www.offensive-security.com/blog/feed/" "pentest"
+add_feed "SpecterOps" "https://posts.specterops.io/feed" "pentest"
+add_feed "MDSec" "https://www.mdsec.co.uk/category/penetration-testing/feed/" "pentest"
+add_feed "Corelan Team" "https://www.corelan.be/index.php/feed/" "pentest"
+add_feed "Hacking Articles" "http://www.hackingarticles.in/feed/" "pentest"
+echo ""
+
+# ============================================
+# 技术资讯（每日多次更新）
+# ============================================
+echo -e "${YELLOW}━━━ 技术资讯 ━━━${NC}"
+add_feed "Hacker News" "https://hnrss.org/frontpage" "tech"
+add_feed "The Verge" "https://www.theverge.com/rss/index.xml" "tech"
+add_feed "Dev.to" "https://dev.to/feed" "tech"
+add_feed "GitHub Blog" "https://github.blog/feed/" "tech"
+add_feed "InfoSec Write-ups" "https://infosecwriteups.com/feed" "tech"
+echo ""
+
+# ============================================
+# 区块链资讯（每日多次更新）
+# ============================================
+echo -e "${YELLOW}━━━ 区块链资讯 ━━━${NC}"
+add_feed "Decrypt" "https://decrypt.co/feed" "blockchain"
+add_feed "The Block" "https://www.theblock.co/rss.xml" "blockchain"
+add_feed "BlockBeats" "https://api.theblockbeats.news/v2/rss/all" "blockchain"
+add_feed "Odaily" "https://rss.odaily.news/rss/newsflash" "blockchain"
+add_feed "CoinDesk" "https://www.coindesk.com/arc/outboundfeeds/rss/" "blockchain"
+add_feed "Cointelegraph" "https://cointelegraph.com/rss" "blockchain"
+echo ""
+
+# ============================================
+# RSShub 聚合（每日更新）
+# ============================================
+echo -e "${YELLOW}━━━ RSShub 聚合 ━━━${NC}"
+add_feed "小黑盒新闻" "https://rsshub.umzzz.com/xiaoheihe/news" "rsshub"
+add_feed "Readhub 日报" "https://rsshub.umzzz.com/readhub/daily" "rsshub"
+add_feed "HelloGitHub" "https://rsshub.umzzz.com/hellogithub/home" "rsshub"
+echo ""
+
+# ============================================
+# 中文技术博客（精选高质量）
+# ============================================
+echo -e "${YELLOW}━━━ 中文技术博客 ━━━${NC}"
+add_feed "阮一峰的网络日志" "http://feeds.feedburner.com/ruanyifeng" "blog"
+add_feed "酷壳 CoolShell" "http://coolshell.cn/feed" "blog"
+add_feed "云风的 BLOG" "http://blog.codingnow.com/atom.xml" "blog"
+add_feed "鸟窝" "https://colobu.com/atom.xml" "blog"
+add_feed "火丁笔记" "http://huoding.com/feed" "blog"
+echo ""
+
+# ============================================
+# 安全工具（定期更新）
+# ============================================
+echo -e "${YELLOW}━━━ 安全工具 ━━━${NC}"
+add_feed "Darknet Tools" "https://www.darknet.org.uk/feed/" "tools"
+add_feed "KitPloit" "http://feeds.feedburner.com/PentestTools" "tools"
+echo ""
 
 echo ""
-echo "✅ 初始化完成！已添加 16 个有效 RSS 源"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${GREEN}✅ 初始化完成！${NC}"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
-echo "📊 统计："
-echo "   - RSShub: 6 个"
-echo "   - Tech: 6 个"
-echo "   - Blockchain: 4 个"
+echo -e "${CYAN}📊 统计信息：${NC}"
+echo "   ✓ 成功添加: ${GREEN}$total_added${NC} 个源"
+echo "   ⚠ 跳过/失败: ${YELLOW}$total_skipped${NC} 个源"
 echo ""
-echo "📋 查看所有 feeds:"
-$RSS_READER list
+echo -e "${CYAN}📋 分类统计：${NC}"
+echo "   • 中文安全资讯: 9 个（每日多次更新）"
+echo "   • 国际安全资讯: 8 个（每日更新）"
+echo "   • 企业安全团队: 7 个（定期更新）"
+echo "   • 漏洞情报: 7 个（每日更新）"
+echo "   • 威胁研究: 6 个（每日更新）"
+echo "   • 渗透测试: 6 个（定期更新）"
+echo "   • 技术资讯: 5 个（每日多次更新）"
+echo "   • 区块链资讯: 6 个（每日多次更新）"
+echo "   • RSShub 聚合: 3 个（每日更新）"
+echo "   • 中文技术博客: 5 个（精选）"
+echo "   • 安全工具: 2 个（定期更新）"
+echo "   ${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo "   ${GREEN}总计: 64 个高质量 RSS 源${NC}"
 echo ""
-echo "🔄 拉取最新文章:"
-echo "   $RSS_READER fetch"
+echo -e "${CYAN}🔧 常用命令：${NC}"
+echo "   查看所有源:  $RSS_READER list"
+echo "   拉取文章:    $RSS_READER fetch"
+echo "   启动 TUI:    $RSS_READER"
+echo "   删除源:      $RSS_READER remove <id>"
 echo ""
-echo "🖥️  启动 TUI 界面:"
-echo "   $RSS_READER"
+echo -e "${YELLOW}💡 提示：${NC}"
+echo "   • 所有源均为高频更新，建议每天拉取 2-3 次"
+echo "   • 首次拉取约需 2-3 分钟，请耐心等待"
+echo "   • 部分源可能因网络原因暂时无法访问"
+echo "   • 可根据需要删除不感兴趣的源"
 echo ""
