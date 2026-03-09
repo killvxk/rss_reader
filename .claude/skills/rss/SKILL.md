@@ -27,14 +27,20 @@ description: This skill should be used when the user asks to "总结 RSS", "RSS 
 
 ## Implementation
 
-### 1. 检查可执行文件
+### 1. 检测平台与可执行文件
 
-检查 `./target/release/rss-reader` 是否存在。
+根据当前操作系统确定可执行文件路径：
+- **Windows**: `.\target\release\rss-reader.exe`
+- **Linux/macOS**: `./target/release/rss-reader`
 
-若不存在，输出以下信息并退出：
+检测方法：检查环境变量 `$OS` 是否包含 `Windows`，或使用 `uname` 判断。
+
+项目根目录：使用当前工作目录（即 Cargo.toml 所在目录），不要硬编码路径。
+
+若可执行文件不存在，输出以下信息并退出：
 ```
 ❌ 找不到 rss-reader 可执行文件
-请先构建项目：cd /root/rss_reader && cargo build --release
+请先构建项目：cargo build --release
 ```
 
 ### 2. 拉取最新数据
@@ -44,9 +50,9 @@ description: This skill should be used when the user asks to "总结 RSS", "RSS 
 🔄 正在拉取最新 RSS...
 ```
 
-执行命令：
+执行命令（在项目根目录下）：
 ```bash
-cd /root/rss_reader && ./target/release/rss-reader fetch
+<RSS_READER> fetch
 ```
 
 解析输出，提取成功数量。若完全失败（0 篇新文章），输出以下信息并退出：
@@ -58,7 +64,7 @@ cd /root/rss_reader && ./target/release/rss-reader fetch
 
 执行命令：
 ```bash
-cd /root/rss_reader && ./target/release/rss-reader articles --json 100
+<RSS_READER> articles --json 100
 ```
 
 解析 JSON 输出，按 `published` 字段排序，取最新 50 篇的 ID。
@@ -67,7 +73,7 @@ cd /root/rss_reader && ./target/release/rss-reader articles --json 100
 ```
 📭 数据库中没有文章
 建议：检查 RSS 源是否正确配置
-运行：./target/release/rss-reader list
+运行：<RSS_READER> list
 ```
 
 ### 4. 获取完整内容
@@ -76,7 +82,7 @@ cd /root/rss_reader && ./target/release/rss-reader articles --json 100
 
 执行命令：
 ```bash
-cd /root/rss_reader && ./target/release/rss-reader articles --json --with-content --ids=<id列表>
+<RSS_READER> articles --json --with-content --ids=<id列表>
 ```
 
 解析 JSON 输出。
@@ -176,8 +182,9 @@ cd /root/rss_reader && ./target/release/rss-reader articles --json --with-conten
 ## 注意事项
 
 - **工具使用**：使用 Bash tool 执行所有命令
-- **工作目录**：所有命令都在 /root/rss_reader 目录下执行
-- **权限要求**：需要读取权限访问 `./target/release/rss-reader` 可执行文件
+- **工作目录**：所有命令都在项目根目录（Cargo.toml 所在目录）下执行，不要硬编码路径
+- **跨平台**：Windows 上使用 `.\target\release\rss-reader.exe`，Linux/macOS 上使用 `./target/release/rss-reader`
+- **权限要求**：需要读取权限访问可执行文件
 - **网络访问**：fetch 命令需要网络连接访问 RSS 源
 - **数据解析**：JSON 解析使用标准 JSON 库
 - **日期格式**：YYYY-MM-DD
@@ -187,7 +194,7 @@ cd /root/rss_reader && ./target/release/rss-reader articles --json --with-conten
 
 **错误 1：跳过错误检查**
 - 问题：直接执行命令不检查可执行文件是否存在
-- 修复：始终先检查 `./target/release/rss-reader` 是否存在
+- 修复：始终先检查可执行文件是否存在（Windows: `.exe` 后缀）
 
 **错误 2：不处理空结果**
 - 问题：文章列表为空时继续执行导致错误

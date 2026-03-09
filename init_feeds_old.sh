@@ -5,7 +5,13 @@
 set -e
 
 DB_URL="${DATABASE_URL:-sqlite:rss_reader.db}"
-RSS_READER="./target/release/rss-reader"
+
+# 跨平台：检测 Windows 并追加 .exe 后缀
+if [[ "$OS" == *"Windows"* ]] || [[ "$(uname -s 2>/dev/null)" == *"MINGW"* ]] || [[ "$(uname -s 2>/dev/null)" == *"MSYS"* ]]; then
+    RSS_READER="./target/release/rss-reader.exe"
+else
+    RSS_READER="./target/release/rss-reader"
+fi
 
 # 颜色定义
 RED='\033[0;31m'
