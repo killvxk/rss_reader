@@ -1,5 +1,5 @@
 use anyhow::Result;
-use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
+use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use std::time::Duration;
 
 pub enum AppEvent {
@@ -21,6 +21,11 @@ pub enum AppEvent {
 }
 
 pub fn handle_key_event(key: KeyEvent) -> AppEvent {
+    // 只处理 Press 事件，忽略 Release 和系统级 Repeat，避免连续走动
+    if key.kind != KeyEventKind::Press {
+        return AppEvent::None;
+    }
+
     match (key.code, key.modifiers) {
         // Quit
         (KeyCode::Char('q'), KeyModifiers::NONE) => AppEvent::Quit,
