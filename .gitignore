@@ -5,3 +5,9 @@ Cargo.lock
 *.db-wal
 .DS_Store
 docs/
+!.claude/skills
+!.agents/skills
+.claude/
+.agents/
+.current-session
+
